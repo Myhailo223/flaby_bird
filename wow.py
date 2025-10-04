@@ -1,6 +1,27 @@
 from pygame import *
 from random import randint
 import sys
+from numpy import *
+
+SR = 16000
+BLOCK = 256
+IMPULSE = -8.0
+GRAVITY = 0.6
+FLAD_CD = 6
+CALIB_SECONDS = 2.0
+CLAB_K = 3.0
+PIPE_BATCH = 10
+
+
+mic_level = 0.0
+
+def audio_cb(indata, frames, time_info, status):
+    global mic_level
+    if status : return
+    x = indata.astype(float32, copy = False)
+    rms = float(sqrt(mean(x*x)))
+    mic_level = 0.85 * mic_level + rms
+
 
 init()
 
@@ -27,6 +48,30 @@ main_font = font.Font(None, 100)
 score = 0
 lose = False
 y_vel = 2
+cooldown = 0
+
+THRESH = None
+
+
+def calibrate_threshold(seconds = 2.0, k = 3.0)
+    samples = []
+    steps = int((seconds * SR)/BLOCK)
+    if steps < 10:
+        steps = 10
+    for _ in range(steps):
+        sd.sleep(int(1000*BLOCK)/SR)
+        samples.append(mic_level)
+    m = float(mean(samples))
+    s = float(std(samples))
+    return m + k * s
+
+def draw_ui(thresh):
+    score_text = main_font.render(f'{int(score)}', True, (0,0,0))
+    window.bilt(score_text, (window_size[0]//2 - score_text.get_rect().w/2, 40))
+    bar_w = int(min(1.0, mic_level))
+    draw.rect(window, (0,0,0), Rect(20,20,302,24), 2)
+    
+
 
 while True:
     for e in event.get():
